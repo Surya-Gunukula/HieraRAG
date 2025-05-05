@@ -88,18 +88,6 @@ if __name__ == "__main__":
 
     nodes = splitter.get_nodes_from_documents(documents)
 
-    source = EntityNode(name="TestSource", label="Company", properties={"id": "TestSourceID"})
-    target = EntityNode(name="TestTarget", label="Market", properties={"id": "TestTargetID"})
-    relation = Relation(
-        label="listed_on",
-        source_id="TestSourceID",
-        target_id="TestTargetID",
-        properties={
-            "relationship_description": "TestSource is listed on TestTarget.",
-            "triplet_source_id": "manual-test-1"
-        }
-    )
-
 
     index = PropertyGraphIndex(
         nodes=nodes, 
@@ -109,8 +97,31 @@ if __name__ == "__main__":
     )
 
     print(index.property_graph_store.get_triplets()[10])
-
     print(index.property_graph_store.get_triplets()[10][0].properties)
+    print(index.property_graph_store.get_triplets()[10][1].properties)
+
+    print("GOT HERE")
+
+    index.property_graph_store.build_communities()
+
+    query_engine = GraphRAGQueryEngine(
+        graph_store=index.property_graph_store,
+        llm=llm,
+        index=index,
+        similarity_top_k=10,
+    )
+
+    response = query_engine.query(
+        "What are the main news discussed in the document?"
+    )
+    print(response)
+
+
+    response = query_engine.query("What are the main news in energy sector?")
+    print(response)
+
+
+
 
     
 

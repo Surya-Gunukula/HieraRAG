@@ -54,7 +54,9 @@ class GraphRAGStore(Neo4jPropertyGraphStore):
         nx_graph = nx.Graph()
         triplets = self.get_triplets()
         for entity1, relation, entity2 in triplets:
-            print(relation.properties["relation_description"])
+            print("PROPERTIES", relation.properties)
+            print("RELATION PROPERTIES", relation.properties.get("relationship_description"))
+            print(entity1, entity2)
             nx_graph.add_node(entity1.name)
             nx_graph.add_node(entity2.name)
             nx_graph.add_edge(
