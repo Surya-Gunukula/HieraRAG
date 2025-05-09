@@ -53,6 +53,9 @@ class GraphRAGStore(Neo4jPropertyGraphStore):
     def _create_nx_graph(self):
         nx_graph = nx.Graph()
         triplets = self.get_triplets()
+        print(triplets)
+        triplets = [triple for triple in triplets if triple[1].properties.get("relationship_description") is not None]
+        print(triplets)
         for entity1, relation, entity2 in triplets:
             print("PROPERTIES", relation.properties)
             print("RELATION PROPERTIES", relation.properties.get("relationship_description"))
@@ -78,7 +81,7 @@ class GraphRAGStore(Neo4jPropertyGraphStore):
             entity_info[node].add(cluster_id)
 
             for neighbor in nx_graph.neighbors(node):
-                edge_data = nx.graph.get_edge_data(node, neighbor)
+                edge_data = nx_graph.get_edge_data(node, neighbor)
                 if edge_data:
                     detail = f"{node} -> {neighbor} -> {edge_data['relationship']} -> {edge_data['description']}"
                     community_info[cluster_id].append(detail)
@@ -89,12 +92,12 @@ class GraphRAGStore(Neo4jPropertyGraphStore):
 
     def _summarize_communities(self, community_info):
         for community_id, details in community_info.items():
-            defaults_text = (
+            details_text = (
                 "\n".join(details) + "."
             )
             self.community_summary[
                 community_id
-            ] = self.generate_community_summary(defaults_text)
+            ] = self.generate_community_summary(details_text)
 
     def get_community_summaries(self):
         if not self.community_summary:

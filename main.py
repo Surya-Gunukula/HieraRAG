@@ -25,7 +25,7 @@ from llama_index.core.node_parser import SentenceSplitter
 if __name__ == "__main__":
     news = pd.read_csv(
     "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/news_articles.csv"
-    )[:2]
+    )[:5]
     news.head()
 
     documents = [
