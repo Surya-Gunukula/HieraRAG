@@ -27,6 +27,30 @@ class GraphRAGQueryEngine(CustomQueryEngine):
         final_answer = self.aggregate_answers(community_answers)
         return final_answer
 
+    def custom_query2(self, query_str: str) -> str:
+        community_summaries = self.graph_store.get_community_summaries()
+
+        from llama_index.core.schema import TextNode
+        from llama_index.core import VectorStoreIndex
+
+        summary_nodes = [
+            TextNode(text=summary, metadata={"community_id": id})
+            for id, summary in community_summaries.items()
+        ]
+
+        temp_index = VectorStoreIndex(nodes=summary_nodes)
+        summary_retriever = temp_index.as_retriever(similarity_top_k=self.similarity_top_k)
+
+        retrieved_summaries = summary_retriever.retrieve(query_str)
+
+        community_answers = [
+            self.generate_answer_from_summary(node.text, query_str)
+            for node in retrieved_summaries
+        ]
+
+        final_answer = self.aggregate_answers(community_answers)
+        return final_answer
+
 
     def get_entities(self, query_str, similarity_top_k):
         nodes_retrieved = self.index.as_retriever(

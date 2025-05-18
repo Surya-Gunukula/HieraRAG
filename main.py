@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     news = pd.read_csv(
     "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/news_articles.csv"
-    )[:2]
+    )[:10]
     news.head()
 
     documents = [
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         llm=Settings.llm,
         extract_prompt=KG_TRIPLET_EXTRACT_TMPL,
         parse_fn=parse_fn,
-        max_paths_per_chunk=5,
+        max_paths_per_chunk=10,
     )
 
     graph_store = GraphRAGStore(
@@ -113,13 +113,15 @@ if __name__ == "__main__":
         similarity_top_k=10,
     )
 
-    response = query_engine.custom_query(
+    response = query_engine.custom_query2(
         "What are the main news discussed in the document?"
     )
     print(response)
 
 
-    response = query_engine.custom_query("What are the main news in energy sector?")
+    print("SEPERATION")
+
+    response = query_engine.custom_query2("What are the main news in energy sector?")
     print(response)
 
 
