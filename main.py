@@ -7,7 +7,8 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 from extractor import *
 from query import *
-from store import * 
+from store import *
+from utils import clear_neo4j_db 
 
 import os 
 from llama_index.llms.openai import OpenAI
@@ -17,15 +18,16 @@ from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.core import PropertyGraphIndex
 from llama_index.core.node_parser import SentenceSplitter
 
-
-
-
+from neo4j import GraphDatabase
 
 
 if __name__ == "__main__":
+
+    clear_neo4j_db("bolt://localhost:7687", "neo4j", "S00stest!")
+
     news = pd.read_csv(
     "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/news_articles.csv"
-    )[:5]
+    )[:2]
     news.head()
 
     documents = [
@@ -59,16 +61,15 @@ if __name__ == "__main__":
         max_paths_per_chunk=5,
     )
 
+    graph_store = GraphRAGStore(
+        username="neo4j", password="S00stest!", url="bolt://localhost:7687"
+    )
+
     # Run extraction
     processed_docs = extractor(documents)
 
     print(processed_docs[0].metadata.get(KG_NODES_KEY))
 
-    graph_store = GraphRAGStore(
-        username="neo4j", password="S00stest!", url="bolt://localhost:7687"
-    )
-
-    # Print extracted metadata
     for doc in processed_docs:
         print(f"\nDoc ID: {doc.id_}")
         print(f"Text: {doc.text[:300]}...")  # truncate for readability
@@ -104,6 +105,7 @@ if __name__ == "__main__":
 
     index.property_graph_store.build_communities()
 
+
     query_engine = GraphRAGQueryEngine(
         graph_store=index.property_graph_store,
         llm=llm,
@@ -111,13 +113,13 @@ if __name__ == "__main__":
         similarity_top_k=10,
     )
 
-    response = query_engine.query(
+    response = query_engine.custom_query(
         "What are the main news discussed in the document?"
     )
     print(response)
 
 
-    response = query_engine.query("What are the main news in energy sector?")
+    response = query_engine.custom_query("What are the main news in energy sector?")
     print(response)
 
 
